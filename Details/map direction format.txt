@@ -1,0 +1,726 @@
+last
+-----
+
+import React, { useState } from 'react';
+import { View, TextInput, Button } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+
+const Map = () => {
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [pickupCoordinates, setPickupCoordinates] = useState(null);
+  const [dropoffCoordinates, setDropoffCoordinates] = useState(null);
+
+  // Replace with your own Google Maps Geocoding API key
+  const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY';
+
+  const handleGetDirections = async () => {
+    try {
+      const pickupCoordinates = await getCoordinatesFromAddress(pickupLocation);
+      const dropoffCoordinates = await getCoordinatesFromAddress(dropoffLocation);
+
+      setPickupCoordinates(pickupCoordinates);
+      setDropoffCoordinates(dropoffCoordinates);
+    } catch (error) {
+      console.error('Error getting coordinates:', error);
+    }
+  };
+
+  const getCoordinatesFromAddress = async (address) => {
+    try {
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${GOOGLE_MAPS_API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Invalid address or unable to fetch coordinates');
+      }
+
+      const data = await response.json();
+      if (data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        return { latitude: lat, longitude: lng };
+      } else {
+        throw new Error('Invalid address or unable to fetch coordinates');
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TextInput
+        placeholder="Enter Pickup Location"
+        value={pickupLocation}
+        onChangeText={(text) => setPickupLocation(text)}
+      />
+      <TextInput
+        placeholder="Enter Dropoff Location"
+        value={dropoffLocation}
+        onChangeText={(text) => setDropoffLocation(text)}
+      />
+      <Button title="Get Directions" onPress={handleGetDirections} />
+
+      <MapView
+        style={{ flex: 1 }}
+        initialRegion={{
+          latitude: 0, // Set default coordinates here
+          longitude: 0,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        {pickupCoordinates && (
+          <Marker
+            coordinate={pickupCoordinates}
+            title="Pickup Location"
+          />
+        )}
+        {dropoffCoordinates && (
+          <Marker
+            coordinate={dropoffCoordinates}
+            title="Dropoff Location"
+          />
+        )}
+      </MapView>
+    </View>
+  );
+};
+
+export default Map;
+-------------------------------------------------------------------------------------
+
+
+import React, { useState } from 'react';
+import { View, TextInput, Button } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+
+const Map = () => {
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [pickupCoordinates, setPickupCoordinates] = useState(null);
+  const [dropoffCoordinates, setDropoffCoordinates] = useState(null);
+
+  // Replace with your own Google Maps Geocoding API key
+  const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY';
+
+  const handleGetDirections = async () => {
+    try {
+      const pickupCoordinates = await getCoordinatesFromAddress(pickupLocation);
+      const dropoffCoordinates = await getCoordinatesFromAddress(dropoffLocation);
+
+      setPickupCoordinates(pickupCoordinates);
+      setDropoffCoordinates(dropoffCoordinates);
+    } catch (error) {
+      console.error('Error getting coordinates:', error);
+    }
+  };
+
+  const getCoordinatesFromAddress = async (address) => {
+    try {
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${GOOGLE_MAPS_API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Invalid address or unable to fetch coordinates');
+      }
+
+      const data = await response.json();
+      if (data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        return { latitude: lat, longitude: lng };
+      } else {
+        throw new Error('Invalid address or unable to fetch coordinates');
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TextInput
+        placeholder="Enter Pickup Location"
+        value={pickupLocation}
+        onChangeText={(text) => setPickupLocation(text)}
+      />
+      <TextInput
+        placeholder="Enter Dropoff Location"
+        value={dropoffLocation}
+        onChangeText={(text) => setDropoffLocation(text)}
+      />
+      <Button title="Get Directions" onPress={handleGetDirections} />
+
+      <MapView
+        style={{ flex: 1 }}
+        initialRegion={{
+          latitude: 0, // Set default coordinates here
+          longitude: 0,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        {pickupCoordinates && (
+          <Marker
+            coordinate={pickupCoordinates}
+            title="Pickup Location"
+          />
+        )}
+        {dropoffCoordinates && (
+          <Marker
+            coordinate={dropoffCoordinates}
+            title="Dropoff Location"
+          />
+        )}
+      </MapView>
+    </View>
+  );
+};
+
+export default Map;
+--------------------------------------------------------------------------------------------------
+
+import React, { useState } from 'react';
+import { View, TextInput, Button } from 'react-native';
+import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
+import Geolib from 'geolib';
+
+const Map = () => {
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [coordinates, setCoordinates] = useState([]);
+
+  // Replace with your own Google Maps API key
+  const GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY';
+
+  const handleGetDirections = async () => {
+    try {
+      const pickupCoordinates = await getCoordinatesFromAddress(pickupLocation);
+      const dropoffCoordinates = await getCoordinatesFromAddress(dropoffLocation);
+
+      setCoordinates([pickupCoordinates, dropoffCoordinates]);
+    } catch (error) {
+      console.error('Error getting coordinates:', error);
+    }
+  };
+
+  const getCoordinatesFromAddress = async (address) => {
+    // You can use a geocoding service/library to get coordinates from an address
+    // For example, using the Geolib library
+    const geocodeData = await Geolib.getFromAddress(address);
+
+    if (geocodeData.length === 0) {
+      throw new Error('Invalid address or unable to fetch coordinates');
+    }
+
+    const { latitude, longitude } = geocodeData[0];
+    return { latitude, longitude };
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TextInput
+        placeholder="Enter Pickup Location"
+        value={pickupLocation}
+        onChangeText={(text) => setPickupLocation(text)}
+      />
+      <TextInput
+        placeholder="Enter Dropoff Location"
+        value={dropoffLocation}
+        onChangeText={(text) => setDropoffLocation(text)}
+      />
+      <Button title="Get Directions" onPress={handleGetDirections} />
+
+      {coordinates.length > 0 && (
+        <MapView
+          style={{ flex: 1 }}
+          initialRegion={{
+            latitude: coordinates[0].latitude,
+            longitude: coordinates[0].longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        >
+          <Marker coordinate={coordinates[0]} title="Pickup Location" />
+          <Marker coordinate={coordinates[1]} title="Dropoff Location" />
+          <MapViewDirections
+            origin={coordinates[0]}
+            destination={coordinates[1]}
+            apikey={GOOGLE_MAPS_API_KEY}
+            strokeWidth={5}
+            strokeColor="blue"
+          />
+        </MapView>
+      )}
+    </View>
+  );
+};
+
+export default Map;
+----------------------------------------------------------------------------------------------
+
+use him
+---------
+
+// import React from 'react';
+// import { View } from 'react-native';
+// import CarLocationMap from './CarLocationMap';
+
+// const Map = () => {
+//   return (
+//     <View style={{ flex: 1 }}>
+//       <CarLocationMap />
+//     </View>
+//   );
+// };
+
+// export default Map;
+
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+
+const Map = () => {
+  // Define initial region (latitude, longitude, latitudeDelta, longitudeDelta)
+  const initialRegion = {
+    latitude: 37.78825,
+    longitude: -122.4324,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  };
+
+  // Define marker coordinates
+  const markerCoordinates = [
+    { id: 1, latitude: 37.78825, longitude: -122.4324, title: 'Marker 1' },
+    { id: 2, latitude: 37.7749, longitude: -122.4194, title: 'Marker 2' },
+    // Add more marker coordinates as needed
+  ];
+
+  return (
+    <View style={styles.container}>
+      <MapView
+        style={styles.map}
+        initialRegion={initialRegion}
+        showsUserLocation={true}
+      >
+        {/* Render markers */}
+        {markerCoordinates.map(marker => (
+          <Marker
+            key={marker.id}
+            coordinate={{
+              latitude: marker.latitude,
+              longitude: marker.longitude,
+            }}
+            title={marker.title}
+          />
+        ))}
+      </MapView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+});
+
+export default Map;
+
+----------------------------------------------------
+
+
+
+
+booking page
+---------------
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+export default function CarBookingPage() {
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [distance, setDistance] = useState('');
+  const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState('');
+  const [bookingAmount, setBookingAmount] = useState(0);
+  const navigation = useNavigation();
+
+  // Function to generate and send OTP
+  const generateAndSendOTP = () => {
+    // Generate a random 6-digit OTP (you would need a more secure OTP generation method)
+    const generatedOTP = Math.floor(100000 + Math.random() * 900000);
+
+    // In a real-world scenario, you would send this OTP to the user's phone number via an SMS gateway.
+    // For now, we'll just display it in an alert.
+
+    Alert.alert('OTP Confirmation', `Your OTP is: ${generatedOTP}`, [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Confirm',
+        onPress: () => {
+          // Pass booking details and OTP to another page
+          navigation.navigate('BookingConfirmation', {
+            bookingDetails: {
+              username,
+              phone,
+              pickupLocation,
+              dropoffLocation,
+              date,
+              time,
+              distance,
+              bookingAmount,
+            },
+            otp: generatedOTP, // Pass the generated OTP
+          });
+        },
+      },
+    ]);
+  };
+
+  // Modify the handleBooking function to trigger OTP generation
+  const handleBooking = () => {
+    // Check if any of the required fields are empty
+    if (
+      !pickupLocation ||
+      !dropoffLocation ||
+      !date ||
+      !time ||
+      !distance ||
+      !phone ||
+      !username
+    ) {
+      Alert.alert('Error', 'Please fill in all fields before booking.');
+      return;
+    }
+
+    // Calculate the booking amount based on distance
+    const ratePerKilometer = 30; // 30 rupees per kilometer
+    const distanceValue = parseFloat(distance);
+    if (isNaN(distanceValue)) {
+      Alert.alert('Error', 'Invalid distance input.');
+      return;
+    }
+    const bookingAmount = distanceValue * ratePerKilometer;
+
+    // Trigger OTP generation
+    generateAndSendOTP();
+  };
+
+  // Define the rate per kilometer
+  const ratePerKilometer = 30; // 30 rupees per kilometer
+
+  // Function to calculate the booking amount based on distance
+  const calculateAmount = () => {
+    // Ensure that the distance is a valid number
+    const distanceValue = parseFloat(distance);
+    if (!isNaN(distanceValue)) {
+      const calculatedAmount = distanceValue * ratePerKilometer;
+      setBookingAmount(calculatedAmount);
+    } else {
+      // Handle invalid distance input
+      setBookingAmount(0);
+    }
+  };
+
+  // Use useEffect to calculate the booking amount when distance changes
+  useEffect(() => {
+    calculateAmount();
+  }, [distance]);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Car Booking</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={(text) => setUsername(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        value={phone}
+        onChangeText={(text) => setPhone(text)}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Pickup Location"
+        value={pickupLocation}
+        onChangeText={(text) => setPickupLocation(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Dropoff Location"
+        value={dropoffLocation}
+        onChangeText={(text) => setDropoffLocation(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Date"
+        value={date}
+        onChangeText={(text) => setDate(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Time"
+        value={time}
+        onChangeText={(text) => setTime(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Distance (in km)"
+        value={distance}
+        onChangeText={(text) => setDistance(text)}
+        keyboardType="numeric"
+      />
+      <Text style={styles.amountText}>
+        Booking Amount: {bookingAmount.toFixed(2)} rupees
+      </Text>
+      <TouchableOpacity style={styles.button} onPress={handleBooking}>
+        <Text style={styles.buttonText}>Book Now</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lightblue',
+  },
+  header: {
+    fontSize: 44,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'red',
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderWidth: 3,
+    borderColor: 'white',
+    borderRadius: 8,
+    marginBottom: 10,
+    paddingLeft: 10,
+  },
+  amountText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: 'red',
+  },
+  button: {
+    width: '100%',
+    height: 40,
+    backgroundColor: 'blue',
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
+----------------------------------------------------------------------------------------------------
+
+
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+
+const TransactionPage = () => {
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [amount, setAmount] = useState('');
+
+  const handlePayment = () => {
+    // Check if payment method and amount are provided
+    if (!paymentMethod || !amount) {
+      Alert.alert('Error', 'Please select a payment method and enter the amount.');
+      return;
+    }
+
+    // Perform the payment logic here (e.g., connecting to a payment gateway)
+
+    // Display a success message
+    Alert.alert('Success', `Payment of $${amount} via ${paymentMethod} is successful.`);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Make a Payment</Text>
+
+      {/* Payment Method */}
+      <TextInput
+        style={styles.input}
+        placeholder="Payment Method (e.g., GPay, PhonePay, Bank Transfer)"
+        value={paymentMethod}
+        onChangeText={(text) => setPaymentMethod(text)}
+      />
+
+      {/* Amount */}
+      <TextInput
+        style={styles.input}
+        placeholder="Amount (e.g., $50.00)"
+        value={amount}
+        onChangeText={(text) => setAmount(text)}
+        keyboardType="numeric"
+      />
+
+      {/* Payment Button */}
+      <TouchableOpacity style={styles.button} onPress={handlePayment}>
+        <Text style={styles.buttonText}>Make Payment</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: 'white',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'black',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: 'lightgray',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  button: {
+    backgroundColor: 'blue',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+});
+
+export default TransactionPage;
+
+--------------------------------------------------------------
+
+
+import React, { useState } from 'react';
+import { View, TextInput, Button, Text, Alert } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+
+const Map = () => {
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [pickupCoordinates, setPickupCoordinates] = useState(null);
+  const [dropoffCoordinates, setDropoffCoordinates] = useState(null);
+
+  // Replace with your own Google Maps Geocoding API key
+  const GOOGLE_MAPS_API_KEY = 'https://maps.googleapis.com/maps/api/js?key=&callback=initMap';
+
+  const handleGetDirections = async () => {
+    try {
+      const pickupCoordinates = await getCoordinatesFromAddress(pickupLocation);
+      const dropoffCoordinates = await getCoordinatesFromAddress(dropoffLocation);
+
+      setPickupCoordinates(pickupCoordinates);
+      setDropoffCoordinates(dropoffCoordinates);
+    } catch (error) {
+      console.error('Error getting coordinates:', error);
+      Alert.alert('Error', 'Invalid address or unable to fetch coordinates. Please check your input.');
+    }
+  };
+
+  const getCoordinatesFromAddress = async (address) => {
+    try {
+      const encodedAddress = encodeURIComponent(address);
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${GOOGLE_MAPS_API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Invalid address or unable to fetch coordinates');
+      }
+
+      const data = await response.json();
+      if (data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        return { latitude: lat, longitude: lng };
+      } else {
+        throw new Error('Invalid address or unable to fetch coordinates');
+      }
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TextInput
+        placeholder="Enter Pickup Location"
+        value={pickupLocation}
+        onChangeText={(text) => setPickupLocation(text)}
+      />
+      <TextInput
+        placeholder="Enter Dropoff Location"
+        value={dropoffLocation}
+        onChangeText={(text) => setDropoffLocation(text)}
+      />
+      <Button title="Get Directions" onPress={handleGetDirections} />
+
+      <MapView
+        style={{ flex: 1 }}
+        initialRegion={{
+          latitude: 0, // Set default coordinates here
+          longitude: 0,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        {pickupCoordinates && (
+          <Marker
+            coordinate={pickupCoordinates}
+            title="Pickup Location"
+          />
+        )}
+        {dropoffCoordinates && (
+          <Marker
+            coordinate={dropoffCoordinates}
+            title="Dropoff Location"
+          />
+        )}
+      </MapView>
+    </View>
+  );
+};
+
+export default Map;
+
+
+

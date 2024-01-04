@@ -1,0 +1,551 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+import axios from 'axios';
+
+const BookingConfirmationPage = ({ route }) => {
+  const { bookingDetails, CarDetails, amount } = route.params;
+  const [dataFromBackend, setDataFromBackend] = useState(null);
+
+  // Function to fetch data from the backend
+  const fetchDataFromBackend = async () => {
+    try {
+      const response = await axios.get('http://192.168.43.81:8000/api/Booking');
+
+      if (!response.data) {
+        throw new Error('Failed to fetch data');
+      }
+
+      setDataFromBackend(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataFromBackend();
+
+    // Display a payment transaction alert
+    Alert.alert('Payment Success', 'Your payment was successful.');
+  }, []); // Fetch data and display alert when the component mounts
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Booking Confirmation</Text>
+      {bookingDetails ? (
+        <View style={styles.customCard}>
+          <Text style={styles.h}>Booking Details</Text>
+          <Text>Username: {bookingDetails.username}</Text>
+          <Text>Phone Number: {bookingDetails.phone}</Text>
+          <Text>Car Title: {CarDetails.car.title}</Text>
+          <Text>Pickup Location: {bookingDetails.pickupLocation}</Text>
+          <Text>Dropoff Location: {bookingDetails.dropoffLocation}</Text>
+          <Text>Date: {bookingDetails.date}</Text>
+          <Text>Time: {bookingDetails.time}</Text>
+          <Text>Distance: {bookingDetails.distance} km</Text>
+          <Text>Booking Amount: {bookingDetails.bookingAmount.toFixed(2)} rupees</Text>
+          <Text>Payment Amount: ${amount}</Text>
+        </View>
+      ) : (
+        <Text>Booking details are not available.</Text>
+      )}
+
+      {dataFromBackend && (
+        <View>
+          <Text>Data from Backend:</Text>
+          <Text>{JSON.stringify(dataFromBackend)}</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lightblue',
+  },
+  h: {
+    color: 'red',
+    fontWeight: 'bold',
+    fontSize: 18,
+    padding: 10,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'red',
+  },
+  customCard: {
+    borderWidth: 4,
+    borderColor: 'black',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+});
+
+export default BookingConfirmationPage;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------
+
+
+
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Alert } from 'react-native';
+
+const BookingConfirmationPage = ({ route }) => {
+  const { bookingDetails, CarDetails, amount } = route.params;
+  const [dataFromBackend, setDataFromBackend] = useState(null);
+
+  // Function to fetch data from the backend
+  const fetchDataFromBackend = async () => {
+    try {
+      const response = await fetch('http://192.168.0.100:8000/api/bookingConfirmation', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // You may need to send authentication headers or tokens here if required.
+        },
+      });
+
+      if (!response.ok) {
+        throw  Error('Failed to fetch data');
+      }
+
+      const data = await response.json();
+      setDataFromBackend(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataFromBackend();
+
+    // Display a payment transaction alert
+    Alert.alert('Payment Success', 'Your payment was successful.');
+  }, []); // Fetch data and display alert when the component mounts
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Booking Confirmation</Text>
+      {bookingDetails ? (
+        <View style={styles.customCard}>
+          <Text style={styles.h}>Booking Details</Text>
+          <Text>Username: {bookingDetails.username}</Text>
+          <Text>Phone Number: {bookingDetails.phone}</Text>
+          <Text>Car Title: {CarDetails.car.title}</Text>
+          <Text>Pickup Location: {bookingDetails.pickupLocation}</Text>
+          <Text>Dropoff Location: {bookingDetails.dropoffLocation}</Text>
+          <Text>Date: {bookingDetails.date}</Text>
+          <Text>Time: {bookingDetails.time}</Text>
+          <Text>Distance: {bookingDetails.distance} km</Text>
+          <Text>Booking Amount: {bookingDetails.bookingAmount.toFixed(2)} rupees</Text>
+          <Text>Payment Amount: ${amount}</Text>
+        </View>
+      ) : (
+        <Text>Booking details are not available.</Text>
+      )}
+
+      {dataFromBackend && (
+        <View>
+          <Text>Data from Backend:</Text>
+          <Text>{JSON.stringify(dataFromBackend)}</Text>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'lightblue',
+  },
+  h: {
+    color: 'red',
+    fontWeight: 'bold',
+    fontSize: 18,
+    padding: 10,
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: 'red',
+  },
+  customCard: {
+    borderWidth: 4,
+    borderColor: 'black',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+});
+
+export default BookingConfirmationPage;
+
+
+
+
+
+
+---------------
+
+
+
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const cors = require('cors');
+const app = express();
+const port = 8000;
+
+app.use(express.json());
+app.use(cors());
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/carbooking', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => {
+  console.log('Connected to MongoDB');
+});
+
+// Define the User model schema
+const userSchema = new mongoose.Schema({
+  fullName: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Define the Admin model schema
+const adminSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+});
+
+const Admin = mongoose.model('Admin', adminSchema);
+
+// Define a Mongoose model for booking
+const bookingSchema = new mongoose.Schema({
+  username: String,
+  phone: String,
+  pickupLocation: String,
+  dropoffLocation: String,
+  date: String,
+  time: String,
+  distance: Number,
+  bookingAmount: Number,
+  otp: Number,
+});
+const Bookingcar = mongoose.model('Bookingcar', bookingSchema);
+
+// Dummy OTP generation function
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000);
+}
+const transactionSchema = new mongoose.Schema({
+  username: String,
+  phone: String,
+  pickupLocation: String,
+  dropoffLocation: String,
+  date: String,
+  time: String,
+  distance: Number,
+  bookingAmount: Number,
+  otp: Number,
+  paymentmethod: String,
+  paymentamount: Number,
+});
+const Transaction = mongoose.model('Transaction', transactionSchema);
+
+const bookingConfirmationSchema = new mongoose.Schema({
+  username: String,
+  phone: String,
+  pickupLocation: String,
+  dropoffLocation: String,
+  date: String,
+  time: String,
+  distance: Number,
+  bookingAmount: Number,
+  paymentAmount: Number,
+});
+
+const BookingConfirmation = mongoose.model('BookingConfirmation', bookingConfirmationSchema);
+
+
+// User registration endpoint
+app.post('/api/register', async (req, res) => {
+  try {
+    const { fullName, email, password } = req.body;
+
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+    });
+
+    await newUser.save();
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// User login endpoint
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Authentication failed' });
+    }
+
+    // Compare the provided password with the hashed password in the database
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Authentication failed' });
+    }
+
+    res.status(200).json({ message: 'Login successful', user: { /* user data */ } });
+  } catch (error) {
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// Admin registration endpoint
+app.post('/api/admin/register', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if the admin already exists
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ message: 'Admin already exists' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new admin
+    const newAdmin = new Admin({
+      email,
+      password: hashedPassword,
+    });
+
+    await newAdmin.save();
+
+    res.status(201).json({ message: 'Admin registered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Admin registration failed' });
+  }
+});
+
+// Admin login endpoint
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const admin = await Admin.findOne({ email });
+
+    if (!admin) {
+      return res.status(401).json({ message: 'Authentication failed' });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, admin.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Authentication failed' });
+    }
+
+    res.status(200).json({ message: 'Admin login successful', admin: admin });
+  } catch (error) {
+    res.status(500).json({ error: 'Admin login failed' });
+  }
+});
+
+// API endpoint for creating a car booking and generating OTP
+app.post('/api/bookingcar', async (req, res) => {
+  try {
+    const {
+      username,
+      phone,
+      pickupLocation,
+      dropoffLocation,
+      date,
+      time,
+      distance,
+      bookingAmount,
+    } = req.body;
+console.log("venkat")
+    // Generate OTP
+    const otp = generateOTP();
+
+    // Create a booking record
+    const bookingcar = new Bookingcar({
+      username,
+      phone,
+      pickupLocation,
+      dropoffLocation,
+      date,
+      time,
+      distance,
+      bookingAmount,
+      otp,
+    });
+
+    // Save the booking to the MongoDB database
+    const savedBookingcar = await bookingcar.save();
+    res.status(201).json({ otp: savedBookingcar.otp });
+  } catch (error) {
+    console.error('Error saving bookingcar:', error);
+    res.status(500).json({ error: 'Error saving bookingcar' });
+  }
+});
+
+// server.js
+// ... (other imports and middleware)
+
+app.post('/api/Transaction', async (req, res) => {
+  try {
+    const {
+      username,
+      phone,
+      pickupLocation,
+      dropoffLocation,
+      date,
+      time,
+      distance,
+      bookingAmount,
+      paymentmethod,
+      paymentamount,
+    } = req.body;
+
+    // Generate OTP
+    const otp = generateOTP();
+
+    // Create a transaction record
+    const newTransaction = new Transaction({ // Changed variable name here
+      username,
+      phone,
+      pickupLocation,
+      dropoffLocation,
+      date,
+      time,
+      distance,
+      bookingAmount,
+      otp,
+      paymentmethod,
+      paymentamount,
+    });
+
+    // Save the transaction to the MongoDB database
+    const savedTransaction = await newTransaction.save(); // Changed variable name here
+    res.status(201).json({ otp: savedTransaction.otp });
+  } catch (error) {
+    console.error('Error saving Transaction:', error);
+    res.status(500).json({ error: 'Error saving Transaction' });
+  }
+});
+// ... (rest of the code)
+
+app.post('/api/bookingConfirmation', async (req, res) => {
+  const {
+    username,
+    phone,
+    pickupLocation,
+    dropoffLocation,
+    date,
+    time,
+    distance,
+    bookingAmount,
+    paymentAmount,
+  } = req.body;
+
+  try {
+    const confirmation = new BookingConfirmation({
+      username,
+      phone,
+      pickupLocation,
+      dropoffLocation,
+      date,
+      time,
+      distance,
+      bookingAmount,
+      paymentAmount,
+    });
+
+    await confirmation.save();
+
+    res.status(201).json({ message: 'Booking confirmation data saved successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error saving booking confirmation data' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+
+
